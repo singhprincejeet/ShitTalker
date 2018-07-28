@@ -24,10 +24,10 @@ import me.aflak.arduino.Arduino;
 import me.aflak.arduino.ArduinoListener;
 
 public class MainActivity extends AppCompatActivity {
+
     Arduino arduino ;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         arduino = new Arduino(getApplicationContext());
@@ -63,8 +63,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
+    @Override protected void onStart() {
         super.onStart();
         arduino.setArduinoListener(new ArduinoListener() {
             @Override
@@ -96,6 +95,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override protected void onDestroy() {
+        super.onDestroy();
+        arduino.unsetArduinoListener();
+        arduino.close();
     }
 
     private void startListening(SpeechRecognizer speechRecognizer) {
@@ -158,37 +163,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void proccessAudio(String s) {
-        String processed = s.toLowerCase() ;
-        if (processed.contains("go")){
-            processSpeedRequest(processed.substring(processed.indexOf("go")));
-        }
-        if(processed.contains("say")){
-            processSpeachRequest(processed.substring(processed.indexOf("say")));
-        }
-        if(processed.contains("mario")){
-            startEasterEgg("mario") ; 
-        }
-        arduino.send(s.getBytes());
-    }
-
-    private void startEasterEgg(String mario) {
-    }
-
-    public static final String FORWARD = "F" ; 
-    
-    private void processSpeachRequest(String speach) {
-        if(speach.contains("forward")){
-            setRobotSpeed(FORWARD) ; 
-        }
-    }
-
-    private void setRobotSpeed(String forward) {
-    }
-
-    private void processSpeedRequest(String speed) {
-    }
-
     private Intent getSpeechRecognizerIntent() {
         Intent speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -210,11 +184,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        arduino.unsetArduinoListener();
-        arduino.close();
+
+
+    public static final String FORWARD = "F" ;
+    private static final int MAX_LENGTH  = 20 ;
+
+
+    private void proccessAudio(String s)
+    {
+        String processed = s.toLowerCase() ;
+        if (processed.contains("go")){
+            processSpeedRequest(processed.substring(processed.indexOf("go")));
+        }
+        if(processed.contains("say")){
+            processSpeachRequest(processed.substring(processed.indexOf("say")));
+        }
+        //Easter Eggs
+        if(processed.contains("mario")){
+            startEasterEgg("mario") ;
+        }
+        arduino.send(s.getBytes());
     }
+
+    private void startEasterEgg(String mario)
+    {
+
+
+
+    }
+
+    private void processSpeachRequest(String speach)
+    {
+        if(speach.contains("forward")){
+            setRobotSpeed(FORWARD) ;
+        }
+    }
+
+    private void setRobotSpeed(String forward)
+    {
+
+
+    }
+
+    private void processSpeedRequest(String speed)
+    {
+
+
+    }
+
+    private void sendArdunoCode(char prefix, String message ){
+        if (message.length() > 1){
+            message = "$" + message + "&" ;
+        }
+
+        if (message.length() > MAX_LENGTH){
+            message = message.substring(0,MAX_LENGTH);
+        }
+
+        arduino.send(message.getBytes());
+    }
+
 
 }
