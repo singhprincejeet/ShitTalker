@@ -10,6 +10,8 @@ import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.support.annotation.IntDef;
+import android.support.annotation.StringDef;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +19,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -185,10 +189,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    public static final String FORWARD = "F" ;
     private static final int MAX_LENGTH  = 20 ;
 
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({FORWARD,REVERSE,LEFT,RIGHT}) public @interface Message{}
+
+
+
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({SPEED,TURN,EASTER_EGG}) public @interface PrefixTag{}
+
+    private static final int SPEED = 1 ;
+    private static final int TURN = 2 ;
+    private static final int EASTER_EGG = 3 ;
 
     private void proccessAudio(String s)
     {
@@ -196,43 +210,44 @@ public class MainActivity extends AppCompatActivity {
         if (processed.contains("go")){
             processSpeedRequest(processed.substring(processed.indexOf("go")));
         }
-        if(processed.contains("say")){
-            processSpeachRequest(processed.substring(processed.indexOf("say")));
-        }
         //Easter Eggs
         if(processed.contains("mario")){
             startEasterEgg("mario") ;
         }
-        arduino.send(s.getBytes());
     }
 
-    private void startEasterEgg(String mario)
-    {
+    public static final String FORWARD = "F" ;
+    public static final String REVERSE = "R" ;
+    public static final String LEFT = "L" ;
+    public static final String RIGHT = "R" ;
 
-
-
-    }
-
-    private void processSpeachRequest(String speach)
-    {
-        if(speach.contains("forward")){
-            setRobotSpeed(FORWARD) ;
+    private void processSpeedRequest(String go) {
+        if(go.contains("forward")){
+            sendArduinoCode(SPEED,FORWARD);
+        }
+        else if(go.contains("backward") || go.contains("reverse")
+                || go.contains("back")
+                ){
+            sendArduinoCode(SPEED,REVERSE);
+        }
+        if(go.contains("left")){
+            sendArduinoCode(SPEED,LEFT);
+        }
+        else if(go.contains("right")){
+            sendArduinoCode(SPEED,RIGHT);
         }
     }
 
-    private void setRobotSpeed(String forward)
+
+    private void startEasterEgg(String easterEgg)
     {
-
-
+        throw new RuntimeException("Not implemented") ;
+//        sendArduinoCode(EASTER_EGG,null);
     }
 
-    private void processSpeedRequest(String speed)
-    {
 
 
-    }
-
-    private void sendArdunoCode(char prefix, String message ){
+    private void sendArduinoCode(@PrefixTag  int prefix,@Message String message ){
         if (message.length() > 1){
             message = "$" + message + "&" ;
         }
@@ -241,7 +256,23 @@ public class MainActivity extends AppCompatActivity {
             message = message.substring(0,MAX_LENGTH);
         }
 
-        arduino.send(message.getBytes());
+        String prefixChar = null ;
+        switch (prefix){
+            case SPEED:
+                prefixChar = "S" ;
+                break;
+            case TURN:
+                prefixChar = "T" ;
+                break;
+            case EASTER_EGG:
+                prefixChar = "E" ;
+                break;
+        }
+        if (prefixChar != null){
+            message = prefixChar + message ;
+            arduino.send(message.getBytes());
+        }
+
     }
 
 
