@@ -3,6 +3,7 @@ package com.example.princejeetsinghsan.shittalker;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbDevice;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -19,14 +20,18 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+import me.aflak.arduino.Arduino;
+import me.aflak.arduino.ArduinoListener;
 
+public class MainActivity extends AppCompatActivity {
+    Arduino arduino ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        arduino = new Arduino(getApplicationContext());
+        arduino.addVendorId(6790);
         checkPermission();
 
         final TextView speechTextView = findViewById(R.id.speechTextView);
@@ -50,11 +55,47 @@ public class MainActivity extends AppCompatActivity {
                         speechRecognizer.startListening(speechRecognizerIntent);
                         speechTextView.setText("");
                         speechTextView.setHint("Listening...");
+                        //fixme
                         break;
                 }
                 return false;
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        arduino.setArduinoListener(new ArduinoListener() {
+            @Override
+            public void onArduinoAttached(UsbDevice device) {
+                arduino.open(device);
+            }
+
+            @Override
+            public void onArduinoDetached() {
+                // arduino detached from phone
+            }
+
+            @Override
+            public void onArduinoMessage(byte[] bytes) {
+                String message = new String(bytes);
+                // new message received from arduino
+            }
+
+            @Override
+            public void onArduinoOpened() {
+                // you can start the communication
+                String str = "Hello Arduino !";
+                arduino.send(str.getBytes());
+            }
+
+            @Override
+            public void onUsbPermissionDenied() {
+
+            }
+        });
+
     }
 
     private void startListening(SpeechRecognizer speechRecognizer) {
@@ -98,8 +139,11 @@ public class MainActivity extends AppCompatActivity {
                         .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
                 //displaying the first match
-                if (matches != null)
+                if (matches != null){
                     speechTextView.setText(matches.get(0));
+                    proccessAudio(matches.get(0)) ;
+
+                }
             }
 
             @Override
@@ -112,6 +156,37 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void proccessAudio(String s) {
+        String processed = s.toLowerCase() ;
+        if (processed.contains("go")){
+            processSpeedRequest(processed.substring(processed.indexOf("go")));
+        }
+        if(processed.contains("say")){
+            processSpeachRequest(processed.substring(processed.indexOf("say")));
+        }
+        if(processed.contains("mario")){
+            startEasterEgg("mario") ; 
+        }
+        arduino.send(s.getBytes());
+    }
+
+    private void startEasterEgg(String mario) {
+    }
+
+    public static final String FORWARD = "F" ; 
+    
+    private void processSpeachRequest(String speach) {
+        if(speach.contains("forward")){
+            setRobotSpeed(FORWARD) ; 
+        }
+    }
+
+    private void setRobotSpeed(String forward) {
+    }
+
+    private void processSpeedRequest(String speed) {
     }
 
     private Intent getSpeechRecognizerIntent() {
@@ -134,4 +209,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        arduino.unsetArduinoListener();
+        arduino.close();
+    }
+
 }
