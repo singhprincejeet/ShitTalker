@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
     private void processSpeedRequest(String go) {
         int random = (int) (Math.random()*pissOffLevel);
         if (random > 1) {
-            int randomDirection = (int) (Math.random()*4);
+            int randomDirection = (int) (Math.random()*1);
             sendArduinoCode(SPEED, DIRECTIONS[randomDirection]);
         } else {
             if (go.contains("forward")) {
