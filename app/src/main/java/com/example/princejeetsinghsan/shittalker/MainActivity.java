@@ -192,10 +192,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MAX_LENGTH  = 20 ;
 
     @Retention(RetentionPolicy.SOURCE)
-    @StringDef({FORWARD,REVERSE,LEFT,RIGHT}) public @interface Message{}
-
-
-
+    @StringDef({"F", "B", "L", "R"}) public @interface Message{}
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SPEED,TURN,EASTER_EGG}) public @interface PrefixTag{}
@@ -216,25 +213,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static final String FORWARD = "F" ;
-    public static final String REVERSE = "R" ;
-    public static final String LEFT = "L" ;
-    public static final String RIGHT = "R" ;
+    private static final int FORWARD = 0;
+    private static final int BACKWARD = 1;
+    private static final int LEFT = 2;
+    private static final int RIGHT = 3;
+
+    private static final String[] DIRECTIONS = {"F", "B", "L", ""};
 
     private void processSpeedRequest(String go) {
         if(go.contains("forward")){
-            sendArduinoCode(SPEED,FORWARD);
+            sendArduinoCode(SPEED, DIRECTIONS[FORWARD]);
         }
         else if(go.contains("backward") || go.contains("reverse")
                 || go.contains("back")
                 ){
-            sendArduinoCode(SPEED,REVERSE);
+            sendArduinoCode(SPEED,DIRECTIONS[BACKWARD]);
         }
         if(go.contains("left")){
-            sendArduinoCode(SPEED,LEFT);
+            sendArduinoCode(SPEED,DIRECTIONS[LEFT]);
         }
         else if(go.contains("right")){
-            sendArduinoCode(SPEED,RIGHT);
+            sendArduinoCode(SPEED,DIRECTIONS[RIGHT]);
         }
     }
 
