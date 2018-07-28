@@ -204,11 +204,26 @@ public class MainActivity extends AppCompatActivity {
     private void proccessAudio(String s)
     {
         String processed = s.toLowerCase() ;
-        if (processed.contains("go")){
+
+        if(processed.contains("f***")){
+            if (pissOffLevel < 5){
+                pissOffLevel++;
+            }
+        }
+
+        if (processed.contains("go f*** yourself")) {
+            sendArduinoCode(EASTER_EGG, DIRECTIONS[GO_NUTS]);
+        }
+
+        if(processed.contains("please")){
+            pissOffLevel = 0;
+        }
+
+        if (processed.contains("go")) {
             processSpeedRequest(processed.substring(processed.indexOf("go")));
         }
         //Easter Eggs
-        if(processed.contains("mario")){
+        else if(processed.contains("mario")){
             startEasterEgg("mario") ;
         }
     }
@@ -217,23 +232,29 @@ public class MainActivity extends AppCompatActivity {
     private static final int BACKWARD = 1;
     private static final int LEFT = 2;
     private static final int RIGHT = 3;
+    private static final int GO_NUTS = 4;
 
-    private static final String[] DIRECTIONS = {"F", "B", "L", ""};
+    private static final String[] DIRECTIONS = {"F", "B", "L", "R", "N"};
+
+    private static int pissOffLevel = 0;
 
     private void processSpeedRequest(String go) {
-        if(go.contains("forward")){
-            sendArduinoCode(SPEED, DIRECTIONS[FORWARD]);
-        }
-        else if(go.contains("backward") || go.contains("reverse")
-                || go.contains("back")
-                ){
-            sendArduinoCode(SPEED,DIRECTIONS[BACKWARD]);
-        }
-        if(go.contains("left")){
-            sendArduinoCode(SPEED,DIRECTIONS[LEFT]);
-        }
-        else if(go.contains("right")){
-            sendArduinoCode(SPEED,DIRECTIONS[RIGHT]);
+        int random = (int) (Math.random()*pissOffLevel);
+        if (random > 1) {
+            int randomDirection = (int) (Math.random()*4);
+            sendArduinoCode(SPEED, DIRECTIONS[randomDirection]);
+        } else {
+            if (go.contains("forward")) {
+                sendArduinoCode(SPEED, DIRECTIONS[FORWARD]);
+            } else if (go.contains("backward") || go.contains("reverse")
+                    || go.contains("back")
+                    ) {
+                sendArduinoCode(SPEED, DIRECTIONS[BACKWARD]);
+            } else if (go.contains("left")) {
+                sendArduinoCode(SPEED, DIRECTIONS[LEFT]);
+            } else if (go.contains("right")) {
+                sendArduinoCode(SPEED, DIRECTIONS[RIGHT]);
+            }
         }
     }
 
